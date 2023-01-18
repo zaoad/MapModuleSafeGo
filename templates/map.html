@@ -1,0 +1,86 @@
+<html lang="en">
+
+<head>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"
+          integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
+          crossorigin=""/>
+
+    <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"
+            integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
+            crossorigin=""></script>
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/4.1.2/papaparse.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+    <script src='https://api.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.css' rel='stylesheet'/>
+
+    <style type="text/css">
+        #mapid {
+            will-change: transform;
+            transform: scale(1); /* Standard Property */
+            transform-origin: 0 0; /* Standard Property */
+            height: 100%;
+            width: 100%;
+            border: #C2DBFB;
+            border-style: ridge;
+            position: center;
+        }
+
+    </style>
+
+
+</head>
+
+
+<body>
+
+<!--<H1>Slum Migration Map of Bangladesh</H1>-->
+<div id="mapid"></div>
+
+<script type="text/javascript">
+    source = '{{ source }}'
+    destination = '{{ destination }}'
+
+    var map = L.map('mapid').setView({lon: 90.412, lat: 23.810}, 11.1);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap contributors</a>'
+}).addTo(map);
+
+
+$.ajax({
+    type: "GET",
+    url: `http://127.0.0.1:5000/find_path/${source}/${destination}`,
+    // url: `http://192.168.1.111:5000/find_path/${source}/${destination}`, to add in server side with server
+})
+    .done(function (Response) {
+        console.log(Response);
+        latlngs = Response['path'];
+        var polyline = L.polyline(latlngs, {color: 'black', weight: 5}).addTo(map);
+
+        var source_circle = L.circle(latlngs[0], {
+            color: 'pink',
+            fillColor: 'lightpink',
+            fillOpacity: 0.5,
+            radius: 450
+        }).addTo(map);
+        console.log(typeof source)
+        var destination_circle = L.circle(latlngs[latlngs.length - 1], {
+            color: 'green',
+            fillColor: 'lightgreen',
+            fillOpacity: 0.5,
+            radius: 450
+        }).addTo(map);
+    })
+    .fail(function (Response) {
+    });
+
+
+</script>
+
+</body>
+
+</html>
